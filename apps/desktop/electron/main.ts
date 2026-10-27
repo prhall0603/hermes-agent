@@ -1501,6 +1501,9 @@ nativeTheme.themeSource = readPersistedThemeSource()
 const TRANSLUCENCY_CONFIG_PATH = path.join(app.getPath('userData'), 'translucency.json')
 
 function readPersistedTranslucency() {
+  if (!TRANSLUCENCY_SUPPORTED) {
+    return translucencyForPlatform(nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+  }
   try {
     return normalizeTranslucency(JSON.parse(fs.readFileSync(TRANSLUCENCY_CONFIG_PATH, 'utf8')), GLASS_SUPPORTED)
   } catch {
@@ -1509,8 +1512,19 @@ function readPersistedTranslucency() {
     // opaque cannot reliably be swapped to glass afterwards (see
     // windowBackingOptions). nativeTheme is the only appearance signal main
     // has this early; the renderer's first resolved send corrects it.
-    return defaultTranslucencyState(nativeTheme.shouldUseDarkColors ? 'dark' : 'light', GLASS_SUPPORTED, IS_WINDOWS)
+    return translucencyForPlatform(nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
   }
+}
+
+// Linux: translucency is unsupported, and normalizeMode answers 'clear' when
+// glass can't ride — but Electron's setOpacity IS honored on Linux X11, so the
+// mac default intensity (29) paints the whole window see-through (upstream
+// considers the Linux desktop disabled and never runs this path). Force the
+// lever to 0 (= fully opaque: opacityRamp(0) === 1) and never let the
+// renderer raise it (gated in hermes:translucency below).
+function translucencyForPlatform(appearance) {
+  const state = defaultTranslucencyState(appearance, GLASS_SUPPORTED, IS_WINDOWS)
+  return TRANSLUCENCY_SUPPORTED ? state : { ...state, intensity: 0, fade: 0 }
 }
 
 function writePersistedTranslucency(state) {
@@ -16814,6 +16828,7 @@ ipcMain.on('hermes:feature-flags', (event: IpcMainEvent): void => {
 })
 
 ipcMain.on('hermes:translucency', (_event, payload) => {
+  if (!TRANSLUCENCY_SUPPORTED) return
   const next = normalizeTranslucency(payload, GLASS_SUPPORTED)
   const previous = translucencyState
 
