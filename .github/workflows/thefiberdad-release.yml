@@ -78,6 +78,10 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
           # scripts/build/python.mjs refuses to guess an interpreter.
           HERMES_PYTHON: python
+          # GPU-only pinned tool; GH runners have no CUDA driver so its
+          # staged-entry verification fails. Bundled installs serve models
+          # via Ollama instead.
+          HERMES_PAYLOAD_TOOL_SKIP: llamacpp-cuda
         shell: bash
         run: cd apps/desktop && npm run dist:fiberdad
 

@@ -100,6 +100,22 @@
   src: url('../../../node_modules/@nous-research/ui/dist/fonts/Collapse-Bold.woff2') format('woff2');
 }
 
+/* Space Grotesk — The Fiber Dad brand display face (OFL, from the site). */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/SpaceGrotesk-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/SpaceGrotesk-700.woff2') format('woff2');
+}
+
 /* JetBrains Mono — bundled terminal font (Apache-2.0) so bold/italic share the
    regular face's metrics instead of squeezing against a system fallback. */
 @font-face {
@@ -1950,11 +1966,11 @@ body.guest-pointer-lock :is(webview, iframe) {
    something a class-merge or a missed scan can quietly drop, leaving the
    wordmark rendered in body text. */
 .wordmark {
-  font-family: 'Collapse', var(--font-sans);
+  font-family: 'Space Grotesk', var(--font-sans);
   font-weight: 700;
   line-height: 0.9;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.02em;
 }
 
 .fit-text > [aria-hidden] {
