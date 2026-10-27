@@ -49,10 +49,10 @@ jobs:
         with:
           node-version: 22
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Set up uv (python package manager)
         uses: astral-sh/setup-uv@v5
@@ -78,10 +78,10 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
           # scripts/build/python.mjs refuses to guess an interpreter.
           HERMES_PYTHON: python
-          # GPU-only pinned tool; GH runners have no CUDA driver so its
-          # staged-entry verification fails. Bundled installs serve models
-          # via Ollama instead.
-          HERMES_PAYLOAD_TOOL_SKIP: llamacpp-cuda
+          # GPU-only pinned tools; GH runners have no CUDA/ROCm drivers so
+          # their staged-entry verification fails. Bundled installs serve
+          # models via Ollama instead.
+          HERMES_PAYLOAD_TOOL_SKIP: llamacpp-cuda,llamacpp-hip
         shell: bash
         run: cd apps/desktop && npm run dist:fiberdad
 
