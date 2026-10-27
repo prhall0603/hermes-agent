@@ -76,6 +76,8 @@ jobs:
           # No signing credentials on hand — electron-builder skips signing
           # when the relevant env vars are unset.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # scripts/build/python.mjs refuses to guess an interpreter.
+          HERMES_PYTHON: python
         shell: bash
         run: cd apps/desktop && npm run dist:fiberdad
 
