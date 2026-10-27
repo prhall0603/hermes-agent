@@ -3828,7 +3828,7 @@ export const en: Translations = {
     viewDocs: 'View install docs',
     installTo: 'Will install to',
     retryAfterRun: 'I’ve run it -- retry',
-    setupChoiceTitle: 'Set up Hermes Desktop',
+    setupChoiceTitle: 'Set up The Fiber Dad',
     setupChoiceDesc:
       'Connect this app to a Hermes gateway you already run, or install Hermes locally on this computer.',
     setupChoiceDescLocal: 'Install Hermes on this computer, or connect to a Hermes gateway you already run.',

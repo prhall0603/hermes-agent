@@ -73,6 +73,7 @@ const msixOrg = variant === 'fiberdad' ? 'TheFiberDad' : 'NousResearch'
 
 /** @type {ProductIdentity} */
 const identity = {
+  variant,
   store,
   light,
   displayName,
@@ -81,7 +82,7 @@ const identity = {
   channel: store || buildCommit ? null : light ? (canary ? 'light-canary' : 'light') : (canary ? 'canary' : 'latest'),
   appNamePascal: `${name.pascal}${pascalSuffix}`,
   artifactNamePascal: name.pascal,
-  windowsExecutableName: kebabSuffix ? cliName : displayName,
+  windowsExecutableName: variant === 'fiberdad' ? `${name.pascal}${pascalSuffix}` : kebabSuffix ? cliName : displayName,
   cliName,
   msixAppIdWithOrg: `${msixOrg}.${name.pascal}${pascalSuffix}`,
   ...(store

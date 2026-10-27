@@ -1,4 +1,6 @@
 interface ProductIdentity {
+  /** The build variant this artifact was produced with ('' = stock). */
+  variant: string
   /** True when this artifact is Hermes Light (remote-only client). */
   light: boolean
   /** True for a Store-submission build (Windows Store packaging identity). */

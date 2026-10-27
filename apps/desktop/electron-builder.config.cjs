@@ -75,7 +75,9 @@ module.exports = {
   electronVersion,
   appId,
   productName: displayName,
-  executableName: displayName,
+  // Linux/macOS binary: the display name may contain spaces, which makes a
+  // hostile executable name — the pascal identity keeps it a single token.
+  executableName: variant === 'fiberdad' ? appNamePascal : displayName,
   protocols: [
     {
       name: `${displayName} Protocol`,

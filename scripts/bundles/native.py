@@ -194,6 +194,12 @@ def _prepare_native(*, out: Path, ref: str, source: Path, cache: Path,
         n for n in _bundle_package_names()
         if get_package(n).missing_reason(current_target()) is None
     ]
+    # Optional escape hatch for CPU-only packaging hosts: e.g.
+    # HERMES_PAYLOAD_TOOL_SKIP=llamacpp-cuda drops a pinned tool the GPU
+    # bundle expects but the building box can neither use nor fetch.
+    _skip = {s for s in os.environ.get("HERMES_PAYLOAD_TOOL_SKIP", "").split(",") if s}
+    if _skip:
+        names = [n for n in names if n not in _skip]
     from pm import prepare_tools, stage_tools
 
     with _phase(f"preparing {len(names)} pinned tools"):
