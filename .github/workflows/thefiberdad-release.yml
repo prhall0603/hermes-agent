@@ -68,7 +68,7 @@ jobs:
         run: |
           VER="${GITHUB_REF_NAME#tdfd-v}"
           cd apps/desktop
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.VER;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+          npm version "$VER" --no-git-tag-version
           grep -m1 '"version"' package.json
 
       - name: Build the Fiber Dad desktop installer
