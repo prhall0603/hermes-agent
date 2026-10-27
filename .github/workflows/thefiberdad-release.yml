@@ -62,6 +62,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Stamp the installer version from the tag
+        if: startsWith(github.ref, 'refs/tags/tdfd-v')
+        shell: bash
+        run: |
+          VER="${GITHUB_REF_NAME#tdfd-v}"
+          cd apps/desktop
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.VER;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+          grep -m1 '"version"' package.json
+
       - name: Build the Fiber Dad desktop installer
         env:
           # No signing credentials on hand — electron-builder skips signing
