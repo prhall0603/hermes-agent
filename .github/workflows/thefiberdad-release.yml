@@ -88,14 +88,23 @@ jobs:
       - name: Collect installer artifacts
         shell: bash
         run: |
-          mkdir -p "${RUNNER_TEMP}/fds-release"
-          # electron-builder writes its packages into the dist/ dir it is left in.
-          cd apps/desktop/dist
-          shopt -s globstar nullglob
-          for f in *.msix *.exe *.appinstaller *.dmg *.zip *.AppImage *.deb *.rpm *.blockmap; do
-            cp -v "$f" "${RUNNER_TEMP}/fds-release/" || true
+          dest="${RUNNER_TEMP}/fds-release"
+          mkdir -p "$dest"
+          # electron-builder writes to apps/desktop/release; keep dist/ covered too.
+          for dir in apps/desktop/release apps/desktop/dist; do
+            if [ -d "$dir" ]; then
+              cp -v "$dir"/*.msix "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.exe "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.appinstaller "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.dmg "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.zip "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.AppImage "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.deb "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.rpm "$dest/" 2>/dev/null || true
+              cp -v "$dir"/*.blockmap "$dest/" 2>/dev/null || true
+            fi
           done
-          ls -la "${RUNNER_TEMP}/fds-release"
+          ls -la "$dest"
 
       - name: Upload artifacts (every run)
         uses: actions/upload-artifact@v4
