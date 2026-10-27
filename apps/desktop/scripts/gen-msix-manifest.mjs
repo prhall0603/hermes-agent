@@ -34,8 +34,8 @@ const repoRoot = path.resolve(desktop, "..", "..")
 const variant = process.argv[2] || "bundled"
 const arch = process.argv[3] || "x64"
 
-if (!["bundled", "light", "store"].includes(variant)) {
-  console.error(`variant must be 'bundled', 'light', or 'store', got '${variant}'`)
+if (!["bundled", "light", "store", "fiberdad"].includes(variant)) {
+  console.error(`variant must be 'bundled', 'light', 'store', or 'fiberdad', got '${variant}'`)
   process.exit(1)
 }
 

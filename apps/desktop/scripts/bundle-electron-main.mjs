@@ -12,9 +12,13 @@ const repoRoot = resolve(import.meta.dirname, '../../..')
 // Evaluate the one identity module in a fresh process. Its CJS cache and the
 // caller's environment must not carry a previous variant into this artifact.
 function productIdentity(source, stamp) {
-  const variant = stamp.updateMechanism === 'microsoft-store' ? 'store'
-    : stamp.payload === 'bootstrap' ? '' : stamp.payload
-  if (!['', 'bundled', 'light', 'store'].includes(variant)) {
+  // fiberdad stamps carry their variant explicitly (payload reads 'bundled'
+  // so every runtime gate treats the artifact like stock bundled); store is
+  // recognized by its update mechanism; legacy stamps infer from payload.
+  const variant = stamp.variant
+    ?? (stamp.updateMechanism === 'microsoft-store' ? 'store'
+    : stamp.payload === 'bootstrap' ? '' : stamp.payload)
+  if (!['', 'bundled', 'light', 'store', 'fiberdad'].includes(variant)) {
     throw new Error(`Invalid desktop stamp payload: ${stamp.payload}`)
   }
   return execFileSync(process.execPath, ['-e', 'console.log(JSON.stringify(require(process.argv[1])))',

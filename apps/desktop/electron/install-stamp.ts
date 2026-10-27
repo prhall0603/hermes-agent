@@ -87,6 +87,8 @@ export interface InstallStamp {
   displayVersion: string | null
   distance: number | null
   payload: ArtifactKind
+  /** The desktop variant for variants whose payload reads 'bundled' (fiberdad). */
+  variant?: string
   /** Present on bundled artifacts. Validated at build time, never discovered at boot. */
   runtime?: PayloadRuntime
   /** Complete channel inputs, absent on legacy releases and one-off builds. */

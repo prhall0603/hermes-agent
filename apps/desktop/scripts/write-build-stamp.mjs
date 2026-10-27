@@ -247,6 +247,7 @@ export function buildStampPayload(stamp, env = process.env, platform = process.p
     base.displayVersion = channelBuild.version
   }
   if (variant === 'bundled') base.receiverProtocol = 1
+  if (variant === 'fiberdad') base.variant = 'fiberdad'
 
   const updateMechanism = {
     '': 'self',
@@ -266,7 +267,7 @@ export function buildStampPayload(stamp, env = process.env, platform = process.p
   }
   return {
     ...base,
-    payload: variant === "store" ? "bundled" : variant || "bootstrap",
+    payload: variant === "store" || variant === "fiberdad" ? "bundled" : variant || "bootstrap",
     distribution: "desktop-app",
 
     updateMechanism: commitBuild ? 'external' : updateMechanism,
