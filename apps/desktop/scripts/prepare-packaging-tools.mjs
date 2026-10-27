@@ -96,6 +96,12 @@ async function acquirePackagingTools({ source, out, cache, target, formats, buil
     sevenZip: copyTool(path.dirname(path.dirname(archiveTool)), path.join(out, 'sevenZip')),
     icons: copyTool(iconTools, path.join(out, 'icons')),
   }
+  // electron-userland's icons bundle ships no package.json, and this repo's
+  // nearest ancestor (apps/desktop) is "type": "module" — Node therefore runs
+  // the CJS icon-tool.js as ESM and dies on `require`. Only the Linux targets
+  // (AppImage/deb/rpm) spawn this tool, which is why upstream darwin/windows
+  // packaging never notices. Pin the tool directory to CommonJS.
+  fs.writeFileSync(path.join(toolsets.icons, 'package.json'), JSON.stringify({ type: 'commonjs' }) + '\n')
   let windows = null
   if (process.platform === 'win32') {
     const builder = await load('toolsets/winCodeSign.js')
