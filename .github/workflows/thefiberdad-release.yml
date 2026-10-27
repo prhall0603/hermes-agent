@@ -90,6 +90,11 @@ jobs:
         run: |
           dest="${RUNNER_TEMP}/fds-release"
           mkdir -p "$dest"
+          # Ship the one-command installers with every release: stable URLs
+          # (releases/latest/download/fd-install.sh) resolve to the newest
+          # tag's copy. The icon covers the Linux launcher entry.
+          cp -v scripts/fd-install.sh scripts/fd-install.ps1 "$dest/"
+          cp -v apps/desktop/assets/icon.png "$dest/thefiberdad-icon.png"
           # electron-builder writes to apps/desktop/release; keep dist/ covered too.
           for dir in apps/desktop/release apps/desktop/dist; do
             if [ -d "$dir" ]; then
