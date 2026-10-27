@@ -253,11 +253,14 @@ export function buildStampPayload(stamp, env = process.env, platform = process.p
     bootstrap: 'self',
     store: 'microsoft-store',
     bundled: { win32: 'app-installer', darwin: 'electron-updater' }[platform] || 'external',
+    // fiberdad ships as a bundled-style app but never self-updates: no R2
+    // feed is baked, users update by installing a new release from GitHub.
+    fiberdad: 'external',
     light: platform === 'darwin' ? 'electron-updater' : 'external'
   }[variant]
   if (!updateMechanism) throw new Error(`Unknown desktop variant: ${variant}`)
   if (channelBuild && updateMechanism === 'external') throw new Error('Channel builds require a supported native update owner')
-  const bundled = variant === 'bundled' || variant === 'store'
+  const bundled = variant === 'bundled' || variant === 'store' || variant === 'fiberdad'
   if (bundled && !payload?.runtime?.commands?.hermes) {
     throw new Error('PM payload has no completed launch contract; stage the bundle before packaging')
   }
