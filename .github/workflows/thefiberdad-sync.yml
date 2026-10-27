@@ -1,0 +1,95 @@
+# Upstream sync for the Fiber Dad fork.
+#
+# Weekly (and on demand): merges NousResearch/hermes-agent into this fork's
+# `main`, then fast-forwards the `thefiberdad` brand branch onto the new main.
+# The brand edits are tiny and isolated (product-identity variant, wordmark,
+# accent, icon SVGs, this workflow) so conflicts should be rare — when one
+# happens, the branch step fails and an issue is opened instead of silently
+# diverging.
+#
+# Requires a secret GITHUB_TOKEN with contents:write (the default workflow
+# token works when the repo allows Actions to create/push on its own branches).
+
+name: Sync Upstream Hermes
+
+on:
+  schedule:
+    - cron: '0 11 * * 1'   # Mondays 11:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: thefiberdad-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "thefiberdad-sync-bot"
+          git config user.email "actions@github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/NousResearch/hermes-agent.git || true
+          git fetch upstream --tags --no-recurse-submodules
+
+      - name: Merge upstream into main
+        run: |
+          git checkout main
+          git merge --no-edit upstream/main
+
+      - name: Push main
+        run: git push origin main
+
+      - name: Merge main into thefiberdad (brand branch)
+        id: brand-branch
+        run: |
+          git checkout thefiberdad
+          if git merge --no-edit main; then
+            git push origin thefiberdad
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open an issue when the brand branch conflicts
+        if: steps.brand-branch.outputs.conflict == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              'The weekly upstream sync updated `main`, but merging it into the',
+              '`thefiberdad` brand branch hit conflicts.',
+              '',
+              'Resolve locally:',
+              '',
+              '```bash',
+              'git fetch origin upstream',
+              'git checkout thefiberdad',
+              'git merge main',
+              '# resolve, then: git add -A && git merge --continue && git push',
+              '```',
+              '',
+              'The conflicting files are almost certainly inside',
+              '`apps/desktop/product-identity.cjs` / `electron-builder.config.cjs` /',
+              '`src/themes/accents.ts` — keep the fiberdad variant bits and take',
+              'upstream everywhere else.'
+            ].join('\n')
+            await github.rest.issues.create({
+              ...context.repo,
+              title: `Upstream sync conflict on thefiberdad branch (${new Date().toISOString().slice(0, 10)})`,
+              body
+            })

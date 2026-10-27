@@ -19,6 +19,7 @@ const {
   light,
   store,
   storeMsix,
+  variant,
   displayName,
   appId,
   appNamePascal,
@@ -129,7 +130,7 @@ module.exports = {
       from: 'build/install-stamp.json',
       to: 'install-stamp.json'
     },
-    ...(['bundled', 'store'].includes(process.env.HERMES_DESKTOP_VARIANT || '')
+    ...(['bundled', 'store', 'fiberdad'].includes(process.env.HERMES_DESKTOP_VARIANT || '')
       ? [{ from: 'build/agent-payload', to: 'agent-payload' }]
       : []),
     {
@@ -235,7 +236,9 @@ module.exports = {
   win: {
     executableName: windowsExecutableName,
     legalTrademarks: displayName,
-    target: ['msix'],
+    // The Fiber Dad variant also produces an NSIS installer: unsigned MSIX
+    // needs Developer Mode on target PCs, the plain .exe installer does not.
+    target: variant === 'fiberdad' ? ['msix', 'nsis'] : ['msix'],
     // The updaters' relaunch waiter is PowerShell run outside the package. The
     // sealed payload's snapshot omits scripts/, so it ships as a resource
     // (RELAUNCH_WAITER_SCRIPT in electron/updater/relaunch-waiter.ts).

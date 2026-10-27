@@ -10,6 +10,11 @@
 
 const variants = {
   '': { display: 'Hermes', kebab: 'hermes', pascal: 'Hermes' },
+  fiberdad: {
+    display: 'The Fiber Dad',
+    kebab: 'the-fiber-dad',
+    pascal: 'TheFiberDad'
+  },
   light: {
     display: 'Hermes Light',
     kebab: 'hermes-light',
@@ -23,7 +28,7 @@ const variants = {
 }
 
 const variant = process.env.HERMES_DESKTOP_VARIANT || ''
-if (!['', 'light', 'bundled', 'store'].includes(variant)) {
+if (!['', 'light', 'bundled', 'store', 'fiberdad'].includes(variant)) {
   throw new Error(`Unknown HERMES_DESKTOP_VARIANT ${variant}. expected one of (empty), light, bundled, store`)
 }
 
@@ -59,6 +64,11 @@ if (store && (canary || buildCommit)) {
   throw new Error('Store packaging is only eligible for stable releases')
 }
 
+// The Fiber Dad variant owns its own appId family (Windows start-menu data,
+// deep-link scheme, MSIX package identity) so it installs beside stock Hermes.
+const appIdOrg = variant === 'fiberdad' ? 'com.thefiberdad' : 'com.nousresearch'
+const msixOrg = variant === 'fiberdad' ? 'TheFiberDad' : 'NousResearch'
+
 /** @typedef {import("./product-identity.d.cts")} ProductIdentity */
 
 /** @type {ProductIdentity} */
@@ -66,14 +76,14 @@ const identity = {
   store,
   light,
   displayName,
-  appId: `com.nousresearch.${name.kebab}${kebabSuffix}`,
+  appId: `${appIdOrg}.${name.kebab}${kebabSuffix}`,
   // Store and commit builds do not publish a release feed.
   channel: store || buildCommit ? null : light ? (canary ? 'light-canary' : 'light') : (canary ? 'canary' : 'latest'),
   appNamePascal: `${name.pascal}${pascalSuffix}`,
   artifactNamePascal: name.pascal,
   windowsExecutableName: kebabSuffix ? cliName : displayName,
   cliName,
-  msixAppIdWithOrg: `NousResearch.${name.pascal}${pascalSuffix}`,
+  msixAppIdWithOrg: `${msixOrg}.${name.pascal}${pascalSuffix}`,
   ...(store
     ? {
         storeMsix: {

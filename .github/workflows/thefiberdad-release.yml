@@ -1,0 +1,99 @@
+# The Fiber Dad desktop app — release build.
+#
+# Tag a branded build as `tdfd-v*` (e.g. tdfd-v0.21.3) and this workflow builds
+# installers for Windows (MSIX + NSIS), macOS (DMG + ZIP) and Linux (AppImage),
+# then publishes them on the tag's GitHub Release.
+#
+#   HERMES_DESKTOP_VARIANT=fiberdad  -> "The Fiber Dad" identity (see
+#   apps/desktop/product-identity.cjs for the single derivation of every
+#   name-shaped value the variant owns).
+#
+# Artifacts are unsigned; Windows NSIS + Developer-Mode MSIX sideload cleanly,
+# macOS needs right-click > Open on first launch (Gatekeeper).
+
+name: Fiber Dad Desktop Release
+
+on:
+  push:
+    tags:
+      - 'tdfd-v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: thefiberdad-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: macos-latest
+          - os: ubuntu-22.04
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up uv (python package manager)
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build the Fiber Dad desktop installer
+        env:
+          # No signing credentials on hand — electron-builder skips signing
+          # when the relevant env vars are unset.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        shell: bash
+        run: cd apps/desktop && npm run dist:fiberdad
+
+      - name: Collect installer artifacts
+        shell: bash
+        run: |
+          mkdir -p "${RUNNER_TEMP}/fds-release"
+          # electron-builder writes its packages into the dist/ dir it is left in.
+          cd apps/desktop/dist
+          shopt -s globstar nullglob
+          for f in *.msix *.exe *.appinstaller *.dmg *.zip *.AppImage *.deb *.rpm *.blockmap; do
+            cp -v "$f" "${RUNNER_TEMP}/fds-release/" || true
+          done
+          ls -la "${RUNNER_TEMP}/fds-release"
+
+      - name: Upload artifacts (every run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-fiber-dad-desktop-${{ matrix.os }}
+          path: ${{ runner.temp }}/fds-release/*
+          if-no-files-found: error
+
+      - name: Attach to the GitHub Release (tag runs only)
+        if: startsWith(github.ref, 'refs/tags/tdfd-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ runner.temp }}/fds-release/*
+          draft: false
+          prerelease: false

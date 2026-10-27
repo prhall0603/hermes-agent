@@ -6,7 +6,7 @@
  * the pick. `custom:#rrggbb` names a colour that is not a swatch.
  */
 
-export const NOUS_ACCENT = '#0053fd'
+export const NOUS_ACCENT = '#00b4ff'
 
 export const CUSTOM_ACCENT_PREFIX = 'custom:'
 
